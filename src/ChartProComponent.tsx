@@ -31,10 +31,12 @@ import {
 
 import { translateTimezone } from './widget/timezone-modal/data'
 
-import { SymbolInfo, Period, ChartProOptions, ChartPro } from './types'
+import { SymbolInfo, Period, ChartProOptions, ChartPro, ChartProWithOrders } from './types'
+import { OrderManagerImpl, setOrderManager } from './orders'
+import type { CreateOrderOptions, TradingOrder, OrderCallback, OrderTheme } from './orders'
 
 export interface ChartProComponentProps extends Required<Omit<ChartProOptions, 'container'>> {
-  ref: (chart: ChartPro) => void
+  ref: (chart: ChartProWithOrders) => void
 }
 
 interface PrevSymbolPeriod {
@@ -68,6 +70,7 @@ function createIndicator (widget: Nullable<Chart>, indicatorName: string, isStac
 const ChartProComponent: Component<ChartProComponentProps> = props => {
   let widgetRef: HTMLDivElement | undefined = undefined
   let widget: Nullable<Chart> = null
+  let orderManager: OrderManagerImpl | null = null
 
   let priceUnitDom: HTMLElement
 
@@ -102,19 +105,77 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
   })
 
   props.ref({
-    setTheme,
-    getTheme: () => theme(),
-    setStyles,
-    getStyles: () => widget!.getStyles(),
-    setLocale,
-    getLocale: () => locale(),
-    setTimezone: (timezone: string) => { setTimezone({ key: timezone, text: translateTimezone(props.timezone, locale()) }) },
-    getTimezone: () => timezone().key,
-    setSymbol,
-    getSymbol: () => symbol(),
-    setPeriod,
-    getPeriod: () => period()
-  })
+  setTheme,
+  getTheme: () => theme(),
+  setStyles,
+  getStyles: () => widget!.getStyles(),
+  setLocale,
+  getLocale: () => locale(),
+  setTimezone: (timezone: string) => {
+    setTimezone({ key: timezone, text: translateTimezone(props.timezone, locale()) })
+  },
+  getTimezone: () => timezone().key,
+  setSymbol,
+  getSymbol: () => symbol(),
+  setPeriod,
+  getPeriod: () => period(),
+  getChart: () => widget,
+  
+  // Order management methods
+  setOrder: (order: CreateOrderOptions) => {
+    if (!orderManager) throw new Error('Order manager not initialized')
+    return (orderManager as OrderManagerImpl).addOrder(order)
+  },
+  updateOrder: (orderId: string, updates: Partial<TradingOrder>) => {
+    if (!orderManager) throw new Error('Order manager not initialized')
+    ;(orderManager as OrderManagerImpl).updateOrder(orderId, updates)
+  },
+  removeOrder: (orderId: string) => {
+    if (!orderManager) throw new Error('Order manager not initialized')
+    ;(orderManager as OrderManagerImpl).removeOrder(orderId)
+  },
+  getOrder: (orderId: string) => {
+    if (!orderManager) return undefined
+    return (orderManager as OrderManagerImpl).getOrder(orderId)
+  },
+  getAllOrders: () => {
+    if (!orderManager) return []
+    return (orderManager as OrderManagerImpl).getAllOrders()
+  },
+  clearAllOrders: () => {
+    if (!orderManager) return
+    ;(orderManager as OrderManagerImpl).clearAllOrders()
+  },
+  
+  // Order event callbacks
+  onOrderUpdate: (callback: (orderId: string, event: string, order: TradingOrder) => void) => {
+    if (!orderManager) return
+    ;(orderManager as OrderManagerImpl).addCallback({ onOrderEvent: callback })
+  },
+  onOrderCancel: (callback: (orderId: string) => void) => {
+    if (!orderManager) return
+    ;(orderManager as OrderManagerImpl).addCallback({ onCancel: callback })
+  },
+  onOrderPriceChange: (callback: (orderId: string, newPrice: number, oldPrice: number) => void) => {
+    if (!orderManager) return
+    ;(orderManager as OrderManagerImpl).addCallback({ onPriceChange: callback })
+  },
+  onOrderClick: (callback: (orderId: string) => void) => {
+    if (!orderManager) return
+    ;(orderManager as OrderManagerImpl).addCallback({ onOrderClick: callback })
+  },
+  
+  // Order theme management
+  setOrderTheme: (theme: Partial<OrderTheme>) => {
+    if (!orderManager) return
+    ;(orderManager as OrderManagerImpl).setTheme(theme)
+  },
+  getOrderTheme: () => {
+    if (!orderManager) return {}
+    return (orderManager as OrderManagerImpl).theme
+  }
+} as ChartProWithOrders & { getChart: () => Nullable<Chart> })
+
 
   const documentResize = () => {
     widget?.resize()
@@ -255,6 +316,11 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       }
       get()
     })
+    
+    // Initialize order manager
+    orderManager = new OrderManagerImpl(widget)
+    setOrderManager(orderManager)
+    
     widget?.subscribeAction(ActionType.OnTooltipIconClick, (data) => {
       if (data.indicatorName) {
         switch (data.iconId) {

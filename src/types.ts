@@ -72,3 +72,24 @@ export interface ChartPro {
   setPeriod(period: Period): void
   getPeriod(): Period
 }
+
+// Extended ChartPro interface with order management
+export interface ChartProWithOrders extends ChartPro {
+  // Order management methods
+  setOrder(order: any): string
+  updateOrder(orderId: string, updates: any): void
+  removeOrder(orderId: string): void
+  getOrder(orderId: string): any
+  getAllOrders(): any[]
+  clearAllOrders(): void
+  
+  // Order event callbacks
+  onOrderUpdate(callback: (orderId: string, event: string, order: any) => void): void
+  onOrderCancel(callback: (orderId: string) => void): void
+  onOrderPriceChange(callback: (orderId: string, newPrice: number, oldPrice: number) => void): void
+  onOrderClick(callback: (orderId: string) => void): void
+  
+  // Order theme management
+  setOrderTheme(theme: any): void
+  getOrderTheme(): any
+}
