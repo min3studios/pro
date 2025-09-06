@@ -1,6 +1,6 @@
 {
   "name": "@min3studios/klinecharts-pro",
-  "version": "0.2.2",
+  "version": "0.2.3-enhanced",
   "description": "Financial chart with advanced order management built on KLineChart - TradingView/Bybit style order placement and management.",
   "type": "module",
   "main": "./dist/klinecharts-pro.umd.js",
@@ -11,7 +11,8 @@
       "import": "./dist/klinecharts-pro.js",
       "require": "./dist/klinecharts-pro.umd.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./dist/klinecharts-pro.css": "./dist/klinecharts-pro.css"
   },
   "files": [
     "LICENSE",
@@ -55,6 +56,9 @@
     "build-dts": "dts-bundle-generator --no-banner true --umd-module-name klinechartspro -o dist/index.d.ts src/index.ts",
     "build": "pnpm run build-core && pnpm run build-dts && pnpm run verify-build",
     "verify-build": "node scripts/verify-build.js",
+    "link-local": "pnpm run build && pnpm link --global",
+    "unlink-local": "pnpm unlink --global",
+    "test-local": "echo 'Run: pnpm run link-local, then create test project and run: pnpm link --global @min3studios/klinecharts-pro'",
     "prepublishOnly": "pnpm run build",
     "publish:patch": "pnpm version patch && pnpm publish",
     "publish:minor": "pnpm version minor && pnpm publish",

@@ -80,6 +80,7 @@ export interface OrderCallback {
   onPriceChange?: (orderId: string, newPrice: number, oldPrice: number) => void
   onCancel?: (orderId: string) => void
   onOrderClick?: (orderId: string) => void
+  onDragEnd?: (orderId: string, finalPrice: number) => void
 }
 
 // Order manager interface

@@ -1,6 +1,17 @@
-# Custom KLineChart Pro API Documentation
+# Enhanced KLineChart Pro API Documentation
 
-This document provides comprehensive documentation for the enhanced KLineChart Pro with Order Management System.
+This document provides comprehensive documentation for the enhanced KLineChart Pro with **built-in Order Management System** and professional trading features.
+
+## 🚀 Key Features
+
+✅ **Built-in Order Management** - No casting or setup required
+✅ **Professional Visual Styling** - Dotted lines, centered labels, color coding
+✅ **Interactive Orders** - Draggable TP/SL with confirmation callbacks
+✅ **Position Markers** - B/S circles above candles for historical positions
+✅ **Complete Event System** - Real-time callbacks for all order interactions
+✅ **TypeScript Support** - Full type definitions included
+✅ **Zero Configuration** - Works out of the box with professional defaults
+✅ **Backward Compatible** - All existing features preserved
 
 ## Table of Contents
 
@@ -49,29 +60,91 @@ yarn add @min3studios/klinecharts-pro
 
 > **Note**: This package is hosted on GitHub Packages as a public package. No authentication required! See [GITHUB_PACKAGES.md](GITHUB_PACKAGES.md) for detailed setup instructions.
 
+## Enhanced Visual Features
+
+The enhanced KLineChart Pro includes a completely redesigned order management system with professional styling that matches modern trading platforms:
+
+### 🎨 **Visual Improvements**
+
+- **Dotted Lines**: All orders display as dotted/dashed horizontal lines for clear distinction
+- **Centered Labels**: Order information is perfectly centered on the chart for optimal readability
+- **Color-Coded Orders**: Each order type has distinct colors for instant recognition
+  - Take Profit: Blue (#2196F3)
+  - Stop Loss: Pink/Red (#E91E63)
+  - PnL Display: Gray (#616161)
+  - Limit Orders: Orange (#FF9800)
+- **Close Buttons**: X button on each order for easy one-click removal
+- **Position Markers**: Green "B" and Red "S" circles above candles for historical positions
+
+### 🖱️ **Interactive Features**
+
+- **Draggable TP/SL**: Drag take profit and stop loss orders to adjust prices in real-time
+- **Click Events**: Click orders to trigger custom actions (details, modification, etc.)
+- **Drag Confirmation**: Show confirmation dialogs after dragging orders for safety
+- **Real-time Updates**: Orders update instantly with price changes and market movements
+- **Hover Effects**: Visual feedback when hovering over interactive elements
+
+### 📊 **Order Label Formats**
+
+The order labels follow a consistent format for professional appearance:
+
+- **Take Profit**: `TP Price > 48000 | 0.1` (Blue background, white text)
+- **Stop Loss**: `SL Price < 43000 | 0.1` (Pink background, white text)
+- **PnL Display**: `PNL +$50.00 | 0.1` (Gray background, white text)
+- **Limit Orders**: `LIMIT BUY 44000 | 0.05` (Orange background, white text)
+- **Entry Orders**: `ENTRY BUY 45000 | 0.1` (Green/Red based on side)
+
 ## Quick Start
 
 ```typescript
-import { KLineChartPro } from "@klinecharts/pro";
-import type { ChartProWithOrders } from "@klinecharts/pro";
+import { KLineChartPro } from "@min3studios/klinecharts-pro";
+import type { ChartPro } from "@min3studios/klinecharts-pro";
 
-// Initialize chart with order management
+// Initialize chart with built-in order management
 const chart = new KLineChartPro({
   container: "#chart-container",
   symbol: { ticker: "BTCUSDT", name: "Bitcoin/USDT" },
   period: { multiplier: 1, timespan: "hour", text: "1H" },
   datafeed: yourDatafeed,
   theme: "dark",
-}) as ChartProWithOrders;
+});
 
-// Add an order
-const orderId = chart.setOrder({
-  type: "entry",
-  side: "buy",
-  price: 45000,
+// All order management methods are immediately available!
+// No casting or additional setup required
+
+// Add a take profit order (blue, draggable)
+const tpOrderId = chart.setOrder({
+  type: "take_profit",
+  side: "sell",
+  price: 48000,
   quantity: 0.1,
   symbol: "BTCUSDT",
-  status: "filled",
+  status: "pending",
+});
+// Result: Blue dotted line with "TP Price > 48000 | 0.1" label
+
+// Add a position marker (green B above candle)
+const markerId = chart.createPositionMarker({
+  timestamp: Date.now() - 3600000, // 1 hour ago
+  price: 45000,
+  side: "buy",
+  quantity: 0.1,
+  symbol: "BTCUSDT",
+});
+// Result: Green circle with "B" above the specified candle
+
+// Handle drag confirmations for TP/SL orders
+chart.onOrderDragEnd((orderId, finalPrice) => {
+  console.log(`Order ${orderId} dragged to ${finalPrice}`);
+  // Show your confirmation UI here (tick/close buttons)
+  showConfirmationDialog(orderId, finalPrice);
+});
+
+// Handle order cancellations (X button clicks)
+chart.onOrderCancel((orderId) => {
+  console.log(`Order ${orderId} cancelled by user`);
+  // Process cancellation on your exchange
+  cancelOrderOnExchange(orderId);
 });
 ```
 
@@ -140,7 +213,7 @@ chart.getChart(): Chart | null
 
 #### setOrder()
 
-Creates a new order and displays it on the chart.
+Creates a new order and displays it on the chart with enhanced styling.
 
 ```typescript
 chart.setOrder(order: CreateOrderOptions): string
@@ -167,6 +240,15 @@ interface CreateOrderOptions {
 
 **Returns:** `string` - The order ID
 
+**Visual Features:**
+
+- **Dotted Lines**: All orders display as dotted/dashed horizontal lines for clear distinction
+- **Centered Labels**: Order information is perfectly centered on the chart
+- **Color Coding**: Consistent color scheme for instant order type recognition
+- **Close Button**: X button on the right side of each label for one-click removal
+- **Draggable**: TP/SL orders can be dragged to adjust prices with confirmation
+- **Professional Styling**: Clean, modern appearance matching trading platforms
+
 **Example:**
 
 ```typescript
@@ -177,8 +259,8 @@ const orderId = chart.setOrder({
   quantity: 0.05,
   symbol: "BTCUSDT",
   status: "pending",
-  text: "Buy Limit Order",
 });
+// Result: Orange dotted line with "LIMIT BUY 44000 | 0.05" centered label
 ```
 
 #### updateOrder()
@@ -232,11 +314,70 @@ Removes all orders from the chart.
 chart.clearAllOrders(): void
 ```
 
-### Order Types
+### Position Markers
+
+#### createPositionMarker()
+
+Creates B/S markers above candles to show historical positions.
+
+```typescript
+chart.createPositionMarker(options: PositionMarkerOptions): string
+```
+
+**Parameters:**
+
+```typescript
+interface PositionMarkerOptions {
+  timestamp: number; // Candle timestamp
+  price: number; // Entry price
+  side: "buy" | "sell"; // Position side
+  quantity: number; // Position size
+  symbol: string; // Trading symbol
+  id?: string; // Optional custom ID
+}
+```
+
+**Returns:** `string` - The marker ID
+
+**Visual Features:**
+
+- **Buy Markers**: Green circle with white "B" text above the candle
+- **Sell Markers**: Red circle with white "S" text above the candle
+- **Positioned by Time**: Uses timestamp to position above specific candles accurately
+- **Professional Styling**: Clean circles with white borders for visibility
+- **Click Events**: Markers can be clicked to trigger custom actions
+
+**Example:**
+
+```typescript
+// Add buy position marker at specific time
+const buyMarkerId = chart.createPositionMarker({
+  timestamp: 1640995200000, // Unix timestamp for specific candle
+  price: 45000, // Entry price (for reference)
+  side: "buy", // Position side
+  quantity: 0.1, // Position size
+  symbol: "BTCUSDT", // Trading pair
+});
+// Result: Green circle with "B" above the candle at specified time
+
+// Add sell position marker
+const sellMarkerId = chart.createPositionMarker({
+  timestamp: 1640998800000, // Different timestamp
+  price: 46000,
+  side: "sell",
+  quantity: 0.1,
+  symbol: "BTCUSDT",
+});
+// Result: Red circle with "S" above the candle at specified time
+
+// Markers help visualize entry/exit points on historical data
+```
+
+### Order Types & Visual Display
 
 #### Entry Orders
 
-Mark filled positions with PnL display.
+Mark filled positions with PnL display. Shows current profit/loss.
 
 ```typescript
 chart.setOrder({
@@ -247,11 +388,12 @@ chart.setOrder({
   symbol: "BTCUSDT",
   status: "filled",
 });
+// Displays: "PNL +$50.00 | 0.1" (gray background, dotted line)
 ```
 
 #### Limit Orders
 
-Pending buy/sell orders with dashed lines.
+Pending buy/sell orders with orange styling.
 
 ```typescript
 chart.setOrder({
@@ -262,11 +404,12 @@ chart.setOrder({
   symbol: "BTCUSDT",
   status: "pending",
 });
+// Displays: "LIMIT BUY 44000 | 0.05" (orange background, dotted line)
 ```
 
 #### Stop Loss Orders
 
-Risk management orders with risk calculation.
+Risk management orders with pink/red styling. **Draggable**.
 
 ```typescript
 chart.setOrder({
@@ -278,11 +421,12 @@ chart.setOrder({
   status: "pending",
   entryPrice: 45000, // For risk calculation
 });
+// Displays: "SL Price < 43000 | 0.1" (pink background, dotted line)
 ```
 
 #### Take Profit Orders
 
-Profit target orders with profit calculation.
+Profit target orders with blue styling. **Draggable**.
 
 ```typescript
 chart.setOrder({
@@ -294,6 +438,7 @@ chart.setOrder({
   status: "pending",
   entryPrice: 45000, // For profit calculation
 });
+// Displays: "TP Price > 48000 | 0.1" (blue background, dotted line)
 ```
 
 #### Market Orders
@@ -426,6 +571,44 @@ chart.onOrderClick((orderId) => {
 });
 ```
 
+#### onOrderDragEnd()
+
+Listen for drag end events on TP/SL orders. Use this to show confirmation UI.
+
+```typescript
+chart.onOrderDragEnd((orderId: string, finalPrice: number) => void): void
+```
+
+**Example:**
+
+```typescript
+chart.onOrderDragEnd((orderId, finalPrice) => {
+  // Show confirmation dialog with tick/close buttons
+  showConfirmationDialog({
+    message: `Update order ${orderId} to price ${finalPrice}?`,
+    onConfirm: async () => {
+      try {
+        await updateOrderOnExchange(orderId, finalPrice);
+        console.log(`Order ${orderId} updated to ${finalPrice}`);
+      } catch (error) {
+        // Revert the change
+        const order = chart.getOrder(orderId);
+        if (order) {
+          chart.updateOrder(orderId, { price: order.price });
+        }
+      }
+    },
+    onCancel: () => {
+      // Revert the drag
+      const order = chart.getOrder(orderId);
+      if (order) {
+        chart.updateOrder(orderId, { price: order.price });
+      }
+    },
+  });
+});
+```
+
 ## Theming & Styling
 
 ### Order Theme Management
@@ -467,16 +650,28 @@ interface OrderTheme {
 }
 
 interface OrderStyle {
-  lineColor: string; // Line color
-  textColor: string; // Text color
-  backgroundColor?: string; // Background color
-  lineWidth?: number; // Line width
-  lineStyle?: "solid" | "dashed" | "dotted"; // Line style
-  fontSize?: number; // Font size
-  showCancelButton?: boolean; // Show cancel button
-  draggable?: boolean; // Allow dragging
+  lineColor: string; // Line color (always dotted)
+  textColor: string; // Text color (always white)
+  backgroundColor: string; // Label background color
+  borderColor: string; // Label border color
+  closeButtonColor: string; // Close button color
+  lineWidth?: number; // Line width (default: 1)
+  fontSize?: number; // Font size (default: 11)
+  showCancelButton?: boolean; // Show X button (default: true)
+  draggable?: boolean; // Allow dragging (TP/SL only)
 }
 ```
+
+### Default Color Scheme
+
+The enhanced order system uses a consistent color scheme:
+
+- **Take Profit**: Blue (#2196F3) - "TP Price > X | quantity"
+- **Stop Loss**: Pink/Red (#E91E63) - "SL Price < X | quantity"
+- **Entry/PnL**: Gray (#616161) - "PNL ±$X | quantity"
+- **Limit Orders**: Orange (#FF9800) - "LIMIT SIDE price | quantity"
+- **Buy Positions**: Green (#4CAF50) - Green "B" markers
+- **Sell Positions**: Red (#F44336) - Red "S" markers
 
 ### Custom Theme Example
 
@@ -643,20 +838,48 @@ interface OrderCallback {
   onPriceChange?: (orderId: string, newPrice: number, oldPrice: number) => void;
   onCancel?: (orderId: string) => void;
   onOrderClick?: (orderId: string) => void;
+  onDragEnd?: (orderId: string, finalPrice: number) => void;
+}
+
+// Position marker options
+interface PositionMarkerOptions {
+  timestamp: number; // Candle timestamp
+  price: number; // Entry price
+  side: "buy" | "sell"; // Position side
+  quantity: number; // Position size
+  symbol: string; // Trading symbol
+  id?: string; // Optional custom ID
 }
 ```
 
-### Extended Chart Interface
+### Chart Interface (Built-in Order Management)
 
 ```typescript
-interface ChartProWithOrders extends ChartPro {
-  // Order management
+interface ChartPro {
+  // Core chart methods
+  setTheme(theme: string): void;
+  getTheme(): string;
+  setStyles(styles: DeepPartial<Styles>): void;
+  getStyles(): Styles;
+  setLocale(locale: string): void;
+  getLocale(): string;
+  setTimezone(timezone: string): void;
+  getTimezone(): string;
+  setSymbol(symbol: SymbolInfo): void;
+  getSymbol(): SymbolInfo;
+  setPeriod(period: Period): void;
+  getPeriod(): Period;
+
+  // Order management (built-in)
   setOrder(order: CreateOrderOptions): string;
   updateOrder(orderId: string, updates: Partial<TradingOrder>): void;
   removeOrder(orderId: string): void;
   getOrder(orderId: string): TradingOrder | undefined;
   getAllOrders(): TradingOrder[];
   clearAllOrders(): void;
+
+  // Position markers
+  createPositionMarker(options: PositionMarkerOptions): string;
 
   // Event callbacks
   onOrderUpdate(
@@ -667,6 +890,7 @@ interface ChartProWithOrders extends ChartPro {
     callback: (orderId: string, newPrice: number, oldPrice: number) => void
   ): void;
   onOrderClick(callback: (orderId: string) => void): void;
+  onOrderDragEnd(callback: (orderId: string, finalPrice: number) => void): void;
 
   // Theme management
   setOrderTheme(theme: Partial<OrderTheme>): void;
@@ -680,10 +904,10 @@ interface ChartProWithOrders extends ChartPro {
 
 ```typescript
 import { KLineChartPro, OrderPersistence } from "@klinecharts/pro";
-import type { ChartProWithOrders, TradingOrder } from "@klinecharts/pro";
+import type { ChartPro, TradingOrder } from "@klinecharts/pro";
 
 class TradingInterface {
-  private chart: ChartProWithOrders;
+  private chart: ChartPro;
   private symbol: string;
 
   constructor(container: string, symbol: string) {
@@ -694,7 +918,7 @@ class TradingInterface {
       period: { multiplier: 1, timespan: "hour", text: "1H" },
       datafeed: this.createDatafeed(),
       theme: "dark",
-    }) as ChartProWithOrders;
+    });
 
     this.setupEventHandlers();
     this.loadSavedOrders();
@@ -816,10 +1040,10 @@ trading.addOrder({
 
 ```typescript
 class PnLTracker {
-  private chart: ChartProWithOrders;
+  private chart: ChartPro;
   private currentPrice: number = 0;
 
-  constructor(chart: ChartProWithOrders) {
+  constructor(chart: ChartPro) {
     this.chart = chart;
     this.startPriceUpdates();
   }
@@ -890,48 +1114,79 @@ class PnLTracker {
 
 If you're upgrading from the standard KLineChart Pro, here's what you need to know:
 
-#### 1. Type Casting
+#### 1. Simplified API
 
-Cast your chart instance to `ChartProWithOrders` to access order management features:
+Order management features are now built-in to `KLineChartPro` by default - no casting required:
 
 ```typescript
-// Before
-const chart = new KLineChartPro(options);
+// Simple and clean - all features available immediately
+const chart = new KLineChartPro({
+  container: "#chart",
+  symbol: { ticker: "BTCUSDT" },
+  period: { multiplier: 1, timespan: "hour" },
+  datafeed: yourDatafeed,
+});
 
-// After
-const chart = new KLineChartPro(options) as ChartProWithOrders;
+// All order management methods work immediately
+chart.setOrder({...});           // ✅ Available
+chart.onOrderCancel(() => {});   // ✅ Available
+chart.createPositionMarker({...}); // ✅ Available
 ```
 
-#### 2. New Dependencies
+#### 2. Zero Configuration
 
-The order management system is automatically included. No additional imports needed.
+The order management system is automatically included with professional styling:
 
-#### 3. Backward Compatibility
+- ✅ **No additional setup** - works out of the box
+- ✅ **No extra imports** - everything included in main package
+- ✅ **No configuration** - professional defaults applied
+- ✅ **No casting** - all methods available on main class
 
-All existing KLineChart Pro features remain unchanged. The order management system is additive.
+#### 3. Full Backward Compatibility
+
+All existing KLineChart Pro features remain unchanged:
+
+- ✅ **Existing code works** - no breaking changes
+- ✅ **Same API** - all original methods preserved
+- ✅ **Enhanced features** - order management is purely additive
+- ✅ **Performance** - no impact on charts without orders
 
 ### Best Practices
 
-1. **Error Handling**: Always wrap order operations in try-catch blocks
-2. **State Synchronization**: Keep chart orders synchronized with your exchange
-3. **Performance**: Remove old/filled orders periodically to maintain performance
-4. **User Feedback**: Provide visual feedback for order operations
-5. **Persistence**: Use the persistence API to save user's order layouts
-6. **Theme Consistency**: Match order colors with your application theme
+1. **Error Handling**: Always wrap order operations in try-catch blocks for robust applications
+2. **State Synchronization**: Keep chart orders synchronized with your exchange/backend
+3. **Performance**: Remove old/filled orders periodically to maintain optimal performance
+4. **User Feedback**: Provide visual feedback for order operations (loading states, confirmations)
+5. **Drag Confirmations**: Always show confirmation UI after users drag TP/SL orders
+6. **Event Handling**: Use the comprehensive event system for real-time updates
+7. **Position Markers**: Use position markers to show historical entry/exit points
+8. **Theme Consistency**: Leverage the built-in professional color scheme or customize as needed
 
 ### Common Patterns
 
 #### Order Lifecycle Management
 
 ```typescript
-// Create order
-const orderId = chart.setOrder({...})
+// Create order with immediate visual feedback
+const orderId = chart.setOrder({
+  type: "take_profit",
+  side: "sell",
+  price: 48000,
+  quantity: 0.1,
+  symbol: "BTCUSDT",
+  status: "pending",
+});
+// Result: Blue dotted line with "TP Price > 48000 | 0.1" label
 
-// Update order status
-chart.updateOrder(orderId, { status: 'filled' })
+// Update order status when filled
+chart.updateOrder(orderId, {
+  status: "filled",
+  fillPrice: 48050,
+  fillTime: Date.now(),
+});
 
 // Remove order when no longer needed
-chart.removeOrder(orderId)
+chart.removeOrder(orderId);
 ```
 
 #### Batch Operations

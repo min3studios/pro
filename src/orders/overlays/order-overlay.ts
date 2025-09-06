@@ -31,6 +31,69 @@ export function setOrderManager(manager: any) {
   orderManager = manager
 }
 
+// Get colors based on order type and side
+function getOrderColors(type: string, side: string) {
+  switch (type) {
+    case 'take_profit':
+      return {
+        lineColor: '#2196F3', // Blue
+        backgroundColor: '#2196F3',
+        borderColor: '#1976D2',
+        closeButtonColor: '#2196F3'
+      }
+    case 'stop_loss':
+      return {
+        lineColor: '#E91E63', // Pink/Red
+        backgroundColor: '#E91E63',
+        borderColor: '#C2185B',
+        closeButtonColor: '#E91E63'
+      }
+    case 'entry':
+      if (side === 'buy') {
+        return {
+          lineColor: '#4CAF50', // Green for buy
+          backgroundColor: '#4CAF50',
+          borderColor: '#388E3C',
+          closeButtonColor: '#4CAF50'
+        }
+      } else {
+        return {
+          lineColor: '#F44336', // Red for sell
+          backgroundColor: '#F44336',
+          borderColor: '#D32F2F',
+          closeButtonColor: '#F44336'
+        }
+      }
+    default: // PnL and others
+      return {
+        lineColor: '#9E9E9E', // Gray
+        backgroundColor: '#616161',
+        borderColor: '#424242',
+        closeButtonColor: '#9E9E9E'
+      }
+  }
+}
+
+// Create order label text based on type
+function createOrderLabelText(orderData: any, currentPrice: number, pnlResult: any): string {
+  const positionSize = orderData.quantity || 0
+
+  switch (orderData.type) {
+    case 'take_profit':
+      return `TP Price > ${orderData.price} | ${positionSize}`
+    case 'stop_loss':
+      return `SL Price < ${orderData.price} | ${positionSize}`
+    case 'entry':
+      if (pnlResult && pnlResult.netPnl !== 0) {
+        const pnlSign = pnlResult.netPnl >= 0 ? '' : '-'
+        return `PNL ${pnlSign}$${Math.abs(pnlResult.netPnl).toFixed(2)} | ${positionSize}`
+      }
+      return `${orderData.side.toUpperCase()} ${orderData.price} | ${positionSize}`
+    default:
+      return `${orderData.type.toUpperCase()} ${orderData.price} | ${positionSize}`
+  }
+}
+
 const orderOverlay: OverlayTemplate = {
   name: 'trading_order',
   totalStep: 1,
@@ -40,109 +103,119 @@ const orderOverlay: OverlayTemplate = {
   
   createPointFigures: ({ coordinates, overlay, bounding, precision }) => {
     if (coordinates.length === 0) return []
-    
+
     const orderData = overlay.extendData as OrderOverlayData
     if (!orderData) return []
-    
+
     const figures = []
     const coord = coordinates[0]
-    const theme = orderData.theme
-    
+
     // Calculate current price for PnL if available
     const currentPrice = orderData.currentPrice || orderData.price
     const pnlResult = calculatePnL(orderData, currentPrice)
-    
-    // Main horizontal price line
+
+    // Get order colors based on type
+    const colors = getOrderColors(orderData.type, orderData.side)
+
+    // Main horizontal dotted price line
     const lineCoordinates: Coordinate[] = [
       { x: 0, y: coord.y },
       { x: bounding.width, y: coord.y }
     ]
-    
+
     figures.push({
       type: 'line',
       attrs: {
         coordinates: lineCoordinates,
-        color: theme.lineColor,
-        size: theme.lineWidth || 1,
-        style: theme.lineStyle || 'solid'
+        color: colors.lineColor,
+        size: 1,
+        style: 'dashed' // Always dotted/dashed lines
       }
     })
     
-    // Order text label with background
-    const orderText = formatOrderText(orderData, currentPrice, true)
-    const textX = 10
+    // Create order label text based on type
+    const labelText = createOrderLabelText(orderData, currentPrice, pnlResult)
+
+    // Center the label on the chart
+    const textWidth = labelText.length * 6.5 // Approximate text width
+    const textX = (bounding.width - textWidth) / 2
     const textY = coord.y - 8
-    
-    // Text background rectangle
-    if (theme.backgroundColor) {
-      const textWidth = orderText.length * 7 // Approximate text width
-      figures.push({
-        type: 'rect',
-        ignoreEvent: true,
-        attrs: {
-          x: textX - 4,
-          y: textY - 12,
-          width: textWidth + 8,
-          height: 16,
-          color: theme.backgroundColor,
-          borderColor: theme.lineColor,
-          borderSize: 1
-        }
-      })
-    }
-    
-    // Main order text
+
+    // Text background rectangle with rounded corners
+    const bgPadding = 8
+    const bgHeight = 20
+    figures.push({
+      type: 'rect',
+      ignoreEvent: true,
+      attrs: {
+        x: textX - bgPadding,
+        y: textY - bgHeight + 4,
+        width: textWidth + (bgPadding * 2),
+        height: bgHeight,
+        color: colors.backgroundColor,
+        borderColor: colors.borderColor,
+        borderSize: 1,
+        borderRadius: 4
+      }
+    })
+
+    // Main order text (white text)
     figures.push({
       type: 'text',
       ignoreEvent: true,
       attrs: {
-        x: textX,
-        y: textY,
-        text: orderText,
-        color: theme.textColor,
-        size: theme.fontSize || 12,
-        baseline: 'bottom',
+        x: textX + textWidth / 2,
+        y: textY - 4,
+        text: labelText,
+        color: '#FFFFFF',
+        size: 11,
+        baseline: 'middle',
+        align: 'center',
         weight: 'normal'
       }
     })
-    
-    // PnL text (if order is filled and has PnL)
-    if (pnlResult.netPnl !== 0 && (orderData.status === 'filled' || orderData.status === 'partially_filled')) {
-      const pnlColor = getPnLColor(pnlResult.netPnl)
-      const pnlText = `PnL: ${pnlResult.netPnl >= 0 ? '+' : ''}${pnlResult.netPnl.toFixed(2)} (${pnlResult.percentage.toFixed(2)}%)`
-      
-      figures.push({
-        type: 'text',
-        ignoreEvent: true,
-        attrs: {
-          x: textX,
-          y: textY + 14,
-          text: pnlText,
-          color: pnlColor,
-          size: (theme.fontSize || 12) - 1,
-          baseline: 'bottom'
+
+    // Close button (X) on the right side of the label
+    const closeButtonX = textX + textWidth + bgPadding + 5
+    const closeButtonY = textY - bgHeight / 2 + 2
+    const closeButtonSize = 16
+
+    figures.push({
+      type: 'rect',
+      attrs: {
+        x: closeButtonX,
+        y: closeButtonY - closeButtonSize / 2,
+        width: closeButtonSize,
+        height: closeButtonSize,
+        color: colors.closeButtonColor,
+        borderColor: '#FFFFFF',
+        borderSize: 1,
+        borderRadius: 2
+      },
+      onClick: () => {
+        if (orderManager && orderManager.handleOrderCancel) {
+          orderManager.handleOrderCancel(orderData.id)
         }
-      })
-    }
-    
-    // Risk/Profit information for SL/TP orders
-    if (orderData.type === 'stop_loss' && orderData.entryPrice) {
-      const riskAmount = calculateRiskAmount(orderData, orderData.entryPrice)
-      if (riskAmount > 0) {
-        figures.push({
-          type: 'text',
-          ignoreEvent: true,
-          attrs: {
-            x: textX + 200,
-            y: textY,
-            text: `Risk: ${riskAmount.toFixed(2)}`,
-            color: '#f44336',
-            size: (theme.fontSize || 12) - 1,
-            baseline: 'bottom'
-          }
-        })
       }
-    }
+    })
+
+    // Close button X text
+    figures.push({
+      type: 'text',
+      ignoreEvent: true,
+      attrs: {
+        x: closeButtonX + closeButtonSize / 2,
+        y: closeButtonY,
+        text: '×',
+        color: '#FFFFFF',
+        size: 12,
+        align: 'center',
+        baseline: 'middle',
+        weight: 'bold'
+      }
+    })
+    
+
     
     if (orderData.type === 'take_profit' && orderData.entryPrice) {
       const profitTarget = calculateProfitTarget(orderData, orderData.entryPrice)
@@ -155,7 +228,7 @@ const orderOverlay: OverlayTemplate = {
             y: textY,
             text: `Target: +${profitTarget.toFixed(2)}`,
             color: '#4caf50',
-            size: (theme.fontSize || 12) - 1,
+            size: 11,
             baseline: 'bottom'
           }
         })
@@ -163,7 +236,7 @@ const orderOverlay: OverlayTemplate = {
     }
     
     // Cancel button (if enabled and order is cancellable)
-    if (theme.showCancelButton && shouldShowCancelButton(orderData)) {
+    if (shouldShowCancelButton(orderData)) {
       const buttonX = bounding.width - 30
       const buttonY = coord.y - 10
       const buttonSize = 20
@@ -204,20 +277,7 @@ const orderOverlay: OverlayTemplate = {
       })
     }
     
-    // Drag handle indicator (small circle on the left)
-    if (theme.draggable && isOrderDraggable(orderData)) {
-      figures.push({
-        type: 'circle',
-        attrs: {
-          x: 5,
-          y: coord.y,
-          r: 3,
-          color: theme.lineColor,
-          borderColor: '#ffffff',
-          borderSize: 1
-        }
-      })
-    }
+
     
     return figures
   },
@@ -267,16 +327,17 @@ const orderOverlay: OverlayTemplate = {
     
     return true
   },
-  
+
+
   onClick: ({ overlay }) => {
     const orderData = overlay.extendData as OrderOverlayData
     if (!orderData) return false
-    
+
     // Notify order manager of order click
     if (orderManager && orderManager.handleOrderClick) {
       orderManager.handleOrderClick(orderData.id)
     }
-    
+
     return true
   }
 }

@@ -233,11 +233,57 @@ export class OrderManagerImpl implements OrderManager {
   }
   
   /**
-   * Handle order drag end
+   * Handle order drag end - show confirmation buttons
    */
   handleOrderDragEnd = (orderId: string, finalPrice: number): void => {
-    // This can be used for additional logic when dragging ends
-    console.log(`Order ${orderId} drag ended at price ${finalPrice}`)
+    const order = this.orders.get(orderId)
+    if (!order) return
+
+    // Show confirmation UI for TP/SL orders
+    if (order.type === 'take_profit' || order.type === 'stop_loss') {
+      // Notify callbacks about drag end - they can show confirmation UI
+      this.callbacks.forEach(callback => {
+        if (callback.onDragEnd) {
+          callback.onDragEnd(orderId, finalPrice)
+        }
+      })
+    }
+  }
+
+  /**
+   * Create position marker (B/S above candle)
+   */
+  createPositionMarker(options: {
+    timestamp: number
+    price: number
+    side: 'buy' | 'sell'
+    quantity: number
+    symbol: string
+    id?: string
+  }): string {
+    if (!this.chart) return ''
+
+    const markerId = options.id || generateOrderId()
+
+    const overlayId = this.chart.createOverlay({
+      name: 'position_marker',
+      points: [{ timestamp: options.timestamp, value: options.price }],
+      extendData: {
+        id: markerId,
+        side: options.side,
+        quantity: options.quantity,
+        symbol: options.symbol,
+        timestamp: options.timestamp,
+        price: options.price
+      }
+    })
+
+    if (overlayId && typeof overlayId === 'string') {
+      // Store marker ID for later removal if needed
+      this.overlayIds.set(markerId, overlayId)
+    }
+
+    return markerId
   }
   
   /**

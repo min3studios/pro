@@ -13,13 +13,13 @@
  */
 
 import { KLineChartPro } from '../index'
-import type { ChartProWithOrders } from '../types'
+import type { ChartPro } from '../types'
 
 /**
  * Example usage of the Order Management System
  */
 export class OrderManagementExample {
-  private chart: ChartProWithOrders
+  private chart: ChartPro
   
   constructor(container: string | HTMLElement) {
     // Initialize chart with order support
@@ -29,7 +29,7 @@ export class OrderManagementExample {
       period: { multiplier: 1, timespan: 'hour', text: '1H' },
       datafeed: this.createMockDatafeed(),
       theme: 'dark'
-    }) as unknown as ChartProWithOrders
+    })
     
     this.setupOrderHandlers()
     this.addExampleOrders()
@@ -37,30 +37,30 @@ export class OrderManagementExample {
   
   private setupOrderHandlers() {
     // Handle order cancellations
-    this.chart.onOrderCancel((orderId) => {
+    this.chart.onOrderCancel((orderId: string) => {
       console.log(`Order ${orderId} cancelled by user`)
       // In real implementation, cancel order on exchange
       this.cancelOrderOnExchange(orderId)
     })
-    
+
     // Handle price changes from dragging
-    this.chart.onOrderPriceChange((orderId, newPrice, oldPrice) => {
+    this.chart.onOrderPriceChange((orderId: string, newPrice: number, oldPrice: number) => {
       console.log(`Order ${orderId} price changed from ${oldPrice} to ${newPrice}`)
       // In real implementation, update order on exchange
       this.updateOrderOnExchange(orderId, newPrice)
     })
-    
+
     // Handle order clicks
-    this.chart.onOrderClick((orderId) => {
+    this.chart.onOrderClick((orderId: string) => {
       console.log(`Order ${orderId} clicked`)
       const order = this.chart.getOrder(orderId)
       if (order) {
         console.log('Order details:', order)
       }
     })
-    
+
     // Handle all order events
-    this.chart.onOrderUpdate((orderId, event, order) => {
+    this.chart.onOrderUpdate((orderId: string, event: string, order: any) => {
       console.log(`Order ${orderId} event: ${event}`, order)
     })
   }

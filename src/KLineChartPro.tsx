@@ -19,6 +19,7 @@ import { utils, Nullable, DeepPartial, Styles } from 'klinecharts'
 import ChartProComponent from './ChartProComponent'
 
 import { SymbolInfo, Period, ChartPro, ChartProOptions } from './types'
+import type { CreateOrderOptions, TradingOrder, OrderTheme } from './orders'
 
 const Logo = (
   <svg class="logo" viewBox="0 0 80 92">
@@ -44,7 +45,25 @@ export default class KLineChartPro implements ChartPro {
     render(
       () => (
         <ChartProComponent
-          ref={(chart: ChartPro) => { this._chartApi = chart }}
+          ref={(chart: ChartPro) => {
+            this._chartApi = chart
+
+            // Bind order management methods to this instance
+            this.setOrder = chart.setOrder.bind(chart)
+            this.updateOrder = chart.updateOrder.bind(chart)
+            this.removeOrder = chart.removeOrder.bind(chart)
+            this.getOrder = chart.getOrder.bind(chart)
+            this.getAllOrders = chart.getAllOrders.bind(chart)
+            this.clearAllOrders = chart.clearAllOrders.bind(chart)
+            this.createPositionMarker = chart.createPositionMarker.bind(chart)
+            this.onOrderUpdate = chart.onOrderUpdate.bind(chart)
+            this.onOrderCancel = chart.onOrderCancel.bind(chart)
+            this.onOrderPriceChange = chart.onOrderPriceChange.bind(chart)
+            this.onOrderClick = chart.onOrderClick.bind(chart)
+            this.onOrderDragEnd = chart.onOrderDragEnd.bind(chart)
+            this.setOrderTheme = chart.setOrderTheme.bind(chart)
+            this.getOrderTheme = chart.getOrderTheme.bind(chart)
+          }}
           styles={options.styles ?? {}}
           watermark={options.watermark ?? (Logo as Node)}
           theme={options.theme ?? 'light'}
@@ -78,6 +97,29 @@ export default class KLineChartPro implements ChartPro {
   private _container: Nullable<HTMLElement>
 
   private _chartApi: Nullable<ChartPro> = null
+
+  // Order management methods (dynamically bound)
+  public setOrder!: (order: CreateOrderOptions) => string
+  public updateOrder!: (orderId: string, updates: Partial<TradingOrder>) => void
+  public removeOrder!: (orderId: string) => void
+  public getOrder!: (orderId: string) => TradingOrder | undefined
+  public getAllOrders!: () => TradingOrder[]
+  public clearAllOrders!: () => void
+  public createPositionMarker!: (options: {
+    timestamp: number
+    price: number
+    side: 'buy' | 'sell'
+    quantity: number
+    symbol: string
+    id?: string
+  }) => string
+  public onOrderUpdate!: (callback: (orderId: string, event: string, order: TradingOrder) => void) => void
+  public onOrderCancel!: (callback: (orderId: string) => void) => void
+  public onOrderPriceChange!: (callback: (orderId: string, newPrice: number, oldPrice: number) => void) => void
+  public onOrderClick!: (callback: (orderId: string) => void) => void
+  public onOrderDragEnd!: (callback: (orderId: string, finalPrice: number) => void) => void
+  public setOrderTheme!: (theme: any) => void
+  public getOrderTheme!: () => any
 
 
   setTheme (theme: string): void {
@@ -128,4 +170,8 @@ export default class KLineChartPro implements ChartPro {
   getPeriod (): Period {
     return this._chartApi!.getPeriod()
   }
+
+
+
+
 }

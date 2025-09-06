@@ -13,14 +13,15 @@
  */
 
 import orderOverlay, { setOrderManager } from './order-overlay'
+import positionMarkerOverlay from './position-marker'
 
 // Export all order overlays
-export const orderOverlays = [orderOverlay]
+export const orderOverlays = [orderOverlay, positionMarkerOverlay]
 
 // Export utility functions
 export { setOrderManager }
 
 // Export individual overlays
-export { orderOverlay }
+export { orderOverlay, positionMarkerOverlay }
 
 export default orderOverlays

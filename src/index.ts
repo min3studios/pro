@@ -22,7 +22,7 @@ import KLineChartPro from './KLineChartPro'
 
 import { load } from './i18n'
 
-import { Datafeed, SymbolInfo, Period, DatafeedSubscribeCallback, ChartProOptions, ChartPro, ChartProWithOrders } from './types'
+import { Datafeed, SymbolInfo, Period, DatafeedSubscribeCallback, ChartProOptions, ChartPro } from './types'
 
 import './index.less'
 
@@ -42,5 +42,5 @@ export {
 export * from './orders'
 
 export type {
-  Datafeed, SymbolInfo, Period, DatafeedSubscribeCallback, ChartProOptions, ChartPro, ChartProWithOrders
+  Datafeed, SymbolInfo, Period, DatafeedSubscribeCallback, ChartProOptions, ChartPro
 }
