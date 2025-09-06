@@ -20,43 +20,34 @@ This document provides comprehensive documentation for the enhanced KLineChart P
 ### Using pnpm (Recommended)
 
 ```bash
-# Configure registry first
+# Configure registry first (one-time setup)
 pnpm config set @min3studios:registry https://npm.pkg.github.com
 
-# Authenticate
-npm login --scope=@min3studios --registry=https://npm.pkg.github.com
-
-# Install
+# Install (no authentication needed)
 pnpm add @min3studios/klinecharts-pro
 ```
 
 ### Using npm
 
 ```bash
-# Configure registry first
+# Configure registry first (one-time setup)
 npm config set @min3studios:registry https://npm.pkg.github.com
 
-# Authenticate
-npm login --scope=@min3studios --registry=https://npm.pkg.github.com
-
-# Install
+# Install (no authentication needed)
 npm install @min3studios/klinecharts-pro
 ```
 
 ### Using yarn
 
 ```bash
-# Configure registry first
+# Configure registry first (one-time setup)
 npm config set @min3studios:registry https://npm.pkg.github.com
 
-# Authenticate
-npm login --scope=@min3studios --registry=https://npm.pkg.github.com
-
-# Install
+# Install (no authentication needed)
 yarn add @min3studios/klinecharts-pro
 ```
 
-> **Note**: This package is hosted on GitHub Packages. See [GITHUB_PACKAGES.md](GITHUB_PACKAGES.md) for detailed setup instructions.
+> **Note**: This package is hosted on GitHub Packages as a public package. No authentication required! See [GITHUB_PACKAGES.md](GITHUB_PACKAGES.md) for detailed setup instructions.
 
 ## Quick Start
 

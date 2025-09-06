@@ -43,7 +43,7 @@
 
 ## Install
 
-### From GitHub Packages (Private)
+### From GitHub Packages (Public)
 
 #### Step 1: Configure Registry
 
@@ -54,17 +54,7 @@ npm config set @min3studios:registry https://npm.pkg.github.com
 pnpm config set @min3studios:registry https://npm.pkg.github.com
 ```
 
-#### Step 2: Authenticate
-
-```bash
-# Login with your GitHub credentials
-npm login --scope=@min3studios --registry=https://npm.pkg.github.com
-# Username: your-github-username
-# Password: your-github-personal-access-token
-# Email: your-email@example.com
-```
-
-#### Step 3: Install Package
+#### Step 2: Install Package
 
 ```bash
 # Using pnpm (recommended)
@@ -77,7 +67,7 @@ npm install @min3studios/klinecharts-pro
 yarn add @min3studios/klinecharts-pro
 ```
 
-> **Note**: This package is privately hosted on GitHub Packages. You need repository access and a GitHub Personal Access Token with `read:packages` permission. See [GITHUB_PACKAGES.md](GITHUB_PACKAGES.md) for detailed setup instructions.
+> **Note**: This package is hosted on GitHub Packages as a public package. No authentication required! See [GITHUB_PACKAGES.md](GITHUB_PACKAGES.md) for detailed setup instructions.
 
 ## Quick Start
 

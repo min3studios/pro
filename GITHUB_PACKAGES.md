@@ -7,7 +7,7 @@ This guide explains how to publish and use the KLineChart Pro package via GitHub
 - **Package Name**: `@min3studios/klinecharts-pro`
 - **Registry**: GitHub Packages (`https://npm.pkg.github.com`)
 - **Repository**: `https://github.com/min3studios/klinecharts-pro`
-- **Visibility**: Private (requires authentication)
+- **Visibility**: Public (no authentication required)
 
 ## 🚀 Publishing the Package
 

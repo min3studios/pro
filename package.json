@@ -22,6 +22,7 @@
     "README.md",
     "CUSTOMKLINEAPI.md",
     "PUBLISHING.md",
+    "SETUP.md",
     "dist/"
   ],
   "repository": {
@@ -29,7 +30,8 @@
     "url": "https://github.com/min3studios/klinecharts-pro"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
   },
   "keywords": [
     "klinecharts",
