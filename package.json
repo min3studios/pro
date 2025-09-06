@@ -11,10 +11,6 @@
       "import": "./dist/klinecharts-pro.js",
       "require": "./dist/klinecharts-pro.umd.js",
       "types": "./dist/index.d.ts"
-    },
-    "./orders": {
-      "import": "./dist/orders/index.js",
-      "types": "./dist/orders/index.d.ts"
     }
   },
   "files": [
