@@ -83,6 +83,7 @@ The enhanced KLineChart Pro includes a completely redesigned order management sy
 - **Drag Confirmation**: Show confirmation dialogs after dragging orders for safety
 - **Real-time Updates**: Orders update instantly with price changes and market movements
 - **Hover Effects**: Visual feedback when hovering over interactive elements
+- **Right-Click Protection**: Programmatic orders cannot be removed by right-clicking (unlike drawing tools)
 
 ### 📊 **Order Label Formats**
 
@@ -1160,7 +1161,8 @@ All existing KLineChart Pro features remain unchanged:
 5. **Drag Confirmations**: Always show confirmation UI after users drag TP/SL orders
 6. **Event Handling**: Use the comprehensive event system for real-time updates
 7. **Position Markers**: Use position markers to show historical entry/exit points
-8. **Theme Consistency**: Leverage the built-in professional color scheme or customize as needed
+8. **Order Removal**: Use programmatic removal (`chart.removeOrder()`) instead of relying on user right-clicks
+9. **Theme Consistency**: Leverage the built-in professional color scheme or customize as needed
 
 ### Common Patterns
 

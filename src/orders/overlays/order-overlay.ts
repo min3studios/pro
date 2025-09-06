@@ -339,6 +339,16 @@ const orderOverlay: OverlayTemplate = {
     }
 
     return true
+  },
+
+  // Prevent right-click removal for programmatic orders
+  onRightClick: ({ overlay }) => {
+    const orderData = overlay.extendData as OrderOverlayData
+    if (!orderData) return false
+
+    // Programmatic orders should not be removable by right-click
+    // Return true to prevent default removal behavior
+    return true
   }
 }
 

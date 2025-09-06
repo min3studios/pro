@@ -76,10 +76,20 @@ const positionMarkerOverlay: OverlayTemplate = {
   onClick: ({ overlay }) => {
     const markerData = overlay.extendData
     if (!markerData) return false
-    
+
     // Handle marker click if needed
     console.log('Position marker clicked:', markerData)
-    
+
+    return true
+  },
+
+  // Prevent right-click removal for position markers
+  onRightClick: ({ overlay }) => {
+    const markerData = overlay.extendData
+    if (!markerData) return false
+
+    // Position markers should not be removable by right-click
+    // Return true to prevent default removal behavior
     return true
   }
 }
