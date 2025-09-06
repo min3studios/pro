@@ -14,7 +14,7 @@
 
 import { render } from 'solid-js/web'
 
-import { utils, Nullable, DeepPartial, Styles } from 'klinecharts'
+import { utils, Nullable, DeepPartial, Styles, Chart } from 'klinecharts'
 
 import ChartProComponent from './ChartProComponent'
 
@@ -120,6 +120,40 @@ export default class KLineChartPro implements ChartPro {
   public onOrderDragEnd!: (callback: (orderId: string, finalPrice: number) => void) => void
   public setOrderTheme!: (theme: any) => void
   public getOrderTheme!: () => any
+
+  // Chart access methods
+  getChart(): Chart | null {
+    return this._chartApi?.getChart() || null
+  }
+
+  // Chart refit/scroll methods
+  scrollToRealTime(animationDuration?: number): void {
+    const chart = this.getChart()
+    if (chart) {
+      chart.scrollToRealTime(animationDuration)
+    }
+  }
+
+  scrollToDataIndex(dataIndex: number, animationDuration?: number): void {
+    const chart = this.getChart()
+    if (chart) {
+      chart.scrollToDataIndex(dataIndex, animationDuration)
+    }
+  }
+
+  scrollToTimestamp(timestamp: number, animationDuration?: number): void {
+    const chart = this.getChart()
+    if (chart) {
+      chart.scrollToTimestamp(timestamp, animationDuration)
+    }
+  }
+
+  resize(): void {
+    const chart = this.getChart()
+    if (chart) {
+      chart.resize()
+    }
+  }
 
 
   setTheme (theme: string): void {

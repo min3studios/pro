@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import { KLineData, Styles, DeepPartial } from 'klinecharts'
+import { KLineData, Styles, DeepPartial, Chart } from 'klinecharts'
 
 export interface SymbolInfo {
   ticker: string
@@ -101,4 +101,11 @@ export interface ChartPro {
   // Order theme management
   setOrderTheme(theme: any): void
   getOrderTheme(): any
+
+  // Chart access and control methods
+  getChart(): Chart | null
+  scrollToRealTime(animationDuration?: number): void
+  scrollToDataIndex(dataIndex: number, animationDuration?: number): void
+  scrollToTimestamp(timestamp: number, animationDuration?: number): void
+  resize(): void
 }

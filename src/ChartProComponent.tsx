@@ -338,6 +338,20 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
       getOrderTheme: () => {
         if (!orderManager) return {}
         return (orderManager as OrderManagerImpl).theme
+      },
+
+      // Chart control methods (getChart already defined above)
+      scrollToRealTime: (animationDuration?: number) => {
+        if (widget) widget.scrollToRealTime(animationDuration)
+      },
+      scrollToDataIndex: (dataIndex: number, animationDuration?: number) => {
+        if (widget) widget.scrollToDataIndex(dataIndex, animationDuration)
+      },
+      scrollToTimestamp: (timestamp: number, animationDuration?: number) => {
+        if (widget) widget.scrollToTimestamp(timestamp, animationDuration)
+      },
+      resize: () => {
+        if (widget) widget.resize()
       }
     } as ChartPro & { getChart: () => Nullable<Chart> })
 

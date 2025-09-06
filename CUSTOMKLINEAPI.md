@@ -204,8 +204,77 @@ chart.getSymbol(): SymbolInfo
 chart.setPeriod(period: Period): void
 chart.getPeriod(): Period
 
-// Direct chart access
+// Direct chart access and control
 chart.getChart(): Chart | null
+chart.scrollToRealTime(animationDuration?: number): void
+chart.scrollToDataIndex(dataIndex: number, animationDuration?: number): void
+chart.scrollToTimestamp(timestamp: number, animationDuration?: number): void
+chart.resize(): void
+```
+
+### Chart Control Methods
+
+#### getChart()
+
+Get direct access to the underlying KLineCharts Chart instance for advanced operations.
+
+```typescript
+chart.getChart(): Chart | null
+```
+
+**Returns:** The underlying Chart instance or null if not initialized.
+
+#### scrollToRealTime()
+
+Scroll the chart to show the most recent data. This often triggers auto-fit behavior.
+
+```typescript
+chart.scrollToRealTime(animationDuration?: number): void
+```
+
+**Parameters:**
+
+- `animationDuration` (optional): Animation duration in milliseconds
+
+**Example:**
+
+```typescript
+// Scroll to latest data (useful when switching assets)
+chart.scrollToRealTime();
+
+// With animation
+chart.scrollToRealTime(300);
+```
+
+#### scrollToDataIndex()
+
+Scroll to a specific data point by index.
+
+```typescript
+chart.scrollToDataIndex(dataIndex: number, animationDuration?: number): void
+```
+
+#### scrollToTimestamp()
+
+Scroll to a specific timestamp.
+
+```typescript
+chart.scrollToTimestamp(timestamp: number, animationDuration?: number): void
+```
+
+#### resize()
+
+Manually trigger chart resize. Useful after container size changes.
+
+```typescript
+chart.resize(): void
+```
+
+**Example:**
+
+```typescript
+// After container resize
+chart.resize();
 ```
 
 ## Order Management API
@@ -378,7 +447,7 @@ const sellMarkerId = chart.createPositionMarker({
 
 #### Entry Orders
 
-Mark filled positions with PnL display. Shows current profit/loss.
+Mark filled positions with PnL display. Shows current profit/loss in the format "PNL [amount] | [quantity]".
 
 ```typescript
 chart.setOrder({
@@ -388,9 +457,18 @@ chart.setOrder({
   quantity: 0.1,
   symbol: "BTCUSDT",
   status: "filled",
+  entryPrice: 45000, // Required for PnL calculation
 });
 // Displays: "PNL +$50.00 | 0.1" (gray background, dotted line)
+// Format: "PNL [+/-$amount] | [quantity]"
 ```
+
+**PnL Display Format:**
+
+- Positive PnL: `PNL +$50.00 | 0.1` (green text)
+- Negative PnL: `PNL -$25.50 | 0.1` (red text)
+- Zero PnL: `PNL $0.00 | 0.1` (gray text)
+- No PnL data: `BUY 45000 | 0.1` (fallback format)
 
 #### Limit Orders
 
@@ -896,6 +974,13 @@ interface ChartPro {
   // Theme management
   setOrderTheme(theme: Partial<OrderTheme>): void;
   getOrderTheme(): OrderTheme;
+
+  // Chart access and control methods
+  getChart(): Chart | null;
+  scrollToRealTime(animationDuration?: number): void;
+  scrollToDataIndex(dataIndex: number, animationDuration?: number): void;
+  scrollToTimestamp(timestamp: number, animationDuration?: number): void;
+  resize(): void;
 }
 ```
 
@@ -1162,7 +1247,8 @@ All existing KLineChart Pro features remain unchanged:
 6. **Event Handling**: Use the comprehensive event system for real-time updates
 7. **Position Markers**: Use position markers to show historical entry/exit points
 8. **Order Removal**: Use programmatic removal (`chart.removeOrder()`) instead of relying on user right-clicks
-9. **Theme Consistency**: Leverage the built-in professional color scheme or customize as needed
+9. **Asset Switching**: Always clear orders and call `scrollToRealTime()` when switching assets for proper chart fitting
+10. **Theme Consistency**: Leverage the built-in professional color scheme or customize as needed
 
 ### Common Patterns
 
@@ -1189,6 +1275,28 @@ chart.updateOrder(orderId, {
 
 // Remove order when no longer needed
 chart.removeOrder(orderId);
+```
+
+#### Asset Switching with Auto-Fit
+
+```typescript
+// Proper way to switch assets
+async function switchAsset(newSymbol: SymbolInfo) {
+  // 1. Clear existing orders to prevent scale issues
+  chart.clearAllOrders();
+
+  // 2. Update symbol
+  chart.setSymbol(newSymbol);
+
+  // 3. Load new data (your datafeed logic)
+  await loadNewAssetData(newSymbol);
+
+  // 4. Scroll to latest data to trigger auto-fit
+  chart.scrollToRealTime();
+
+  // 5. Optionally resize if container changed
+  chart.resize();
+}
 ```
 
 #### Batch Operations

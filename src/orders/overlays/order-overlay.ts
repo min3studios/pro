@@ -14,10 +14,9 @@
 
 import { OverlayTemplate, utils, Coordinate, Bounding } from 'klinecharts'
 import { TradingOrder, OrderOverlayData } from '../types'
-import { 
-  formatOrderText, 
-  shouldShowCancelButton, 
-  isOrderDraggable, 
+import {
+  formatOrderText,
+  isOrderDraggable,
   calculatePnL,
   calculateRiskAmount,
   calculateProfitTarget,
@@ -235,47 +234,7 @@ const orderOverlay: OverlayTemplate = {
       }
     }
     
-    // Cancel button (if enabled and order is cancellable)
-    if (shouldShowCancelButton(orderData)) {
-      const buttonX = bounding.width - 30
-      const buttonY = coord.y - 10
-      const buttonSize = 20
-      
-      // Cancel button background
-      figures.push({
-        type: 'rect',
-        attrs: {
-          x: buttonX,
-          y: buttonY,
-          width: buttonSize,
-          height: buttonSize,
-          color: '#ff4444',
-          borderColor: '#ffffff',
-          borderSize: 1
-        },
-        onClick: () => {
-          if (orderManager && orderManager.handleOrderCancel) {
-            orderManager.handleOrderCancel(orderData.id)
-          }
-        }
-      })
-      
-      // Cancel button X
-      figures.push({
-        type: 'text',
-        ignoreEvent: true,
-        attrs: {
-          x: buttonX + buttonSize / 2,
-          y: buttonY + buttonSize / 2 + 2,
-          text: '×',
-          color: '#ffffff',
-          size: 14,
-          align: 'center',
-          baseline: 'middle',
-          weight: 'bold'
-        }
-      })
-    }
+
     
 
     
