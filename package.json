@@ -1,6 +1,6 @@
 {
   "name": "@min3studios/klinecharts-pro",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Financial chart with advanced order management built on KLineChart - TradingView/Bybit style order placement and management.",
   "type": "module",
   "main": "./dist/klinecharts-pro.umd.js",
