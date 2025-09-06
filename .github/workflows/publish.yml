@@ -37,6 +37,10 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@min3studios'
 
+      - name: Configure npm for GitHub Packages
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> ~/.npmrc
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
@@ -60,6 +64,15 @@ jobs:
 
       - name: Build package
         run: pnpm run build
+
+      - name: Verify build output
+        run: |
+          echo "Checking if dist directory exists..."
+          ls -la dist/ || echo "dist directory not found!"
+          echo "Checking for main build files..."
+          ls -la dist/klinecharts-pro.js || echo "ES module not found!"
+          ls -la dist/klinecharts-pro.umd.js || echo "UMD module not found!"
+          ls -la dist/index.d.ts || echo "Type definitions not found!"
 
       - name: Run tests (if available)
         run: pnpm test || echo "No tests found"

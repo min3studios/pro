@@ -57,7 +57,8 @@
   "scripts": {
     "build-core": "tsc && vite build",
     "build-dts": "dts-bundle-generator --no-banner true --umd-module-name klinechartspro -o dist/index.d.ts src/index.ts",
-    "build": "pnpm run build-core && pnpm run build-dts",
+    "build": "pnpm run build-core && pnpm run build-dts && pnpm run verify-build",
+    "verify-build": "node scripts/verify-build.js",
     "prepublishOnly": "pnpm run build",
     "publish:patch": "pnpm version patch && pnpm publish",
     "publish:minor": "pnpm version minor && pnpm publish",

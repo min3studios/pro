@@ -9,21 +9,25 @@ export default defineConfig({
     cssTarget: 'chrome61',
     sourcemap: true,
     rollupOptions: {
-      external: ['klinecharts'],
+      external: ['klinecharts', 'solid-js', 'lodash'],
       output: {
         assetFileNames: (chunkInfo) => {
           if (chunkInfo.name === 'style.css') {
             return 'klinecharts-pro.css'
           }
+          return chunkInfo.name || 'assets/[name].[ext]'
         },
         globals: {
-          klinecharts: 'klinecharts'
+          'klinecharts': 'klinecharts',
+          'solid-js': 'SolidJS',
+          'lodash': 'lodash'
         },
       },
     },
     lib: {
       entry: './src/index.ts',
       name: 'klinechartspro',
+      formats: ['es', 'umd'],
       fileName: (format) => {
         if (format === 'es') {
           return 'klinecharts-pro.js'
@@ -31,6 +35,7 @@ export default defineConfig({
         if (format === 'umd') {
           return 'klinecharts-pro.umd.js'
         }
+        return `klinecharts-pro.${format}.js`
       }
     }
   }
