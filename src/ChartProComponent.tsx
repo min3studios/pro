@@ -263,7 +263,23 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         setTimezone({ key: timezone, text: translateTimezone(props.timezone, locale()) })
       },
       getTimezone: () => timezone().key,
-      setSymbol,
+      setSymbol: (s: SymbolInfo) => {
+        // Clear all orders when switching symbols since they're symbol-specific
+        if (orderManager && symbol().ticker !== s.ticker) {
+          orderManager.clearAllOrders()
+        }
+
+        setSymbol(s)
+        widget?.setSymbol(s)
+
+        // Auto-fit chart to new symbol data
+        if (widget) {
+          // Small delay to ensure symbol change is processed
+          setTimeout(() => {
+            widget.scrollToRealTime()
+          }, 100)
+        }
+      },
       getSymbol: () => symbol(),
       setPeriod,
       getPeriod: () => period(),
